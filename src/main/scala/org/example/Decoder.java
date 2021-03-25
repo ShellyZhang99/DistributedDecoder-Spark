@@ -4,6 +4,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hdfs.web.WebHdfsFileSystem;
 
 import java.io.Serializable;
 import java.lang.String;
@@ -20,36 +21,40 @@ public class Decoder implements Serializable {
         paral_decoders = new Vector<Parallel_excl_decoder>(64);
     }
 
-    public Excl_decoder add_decoder(String fileName, String decoderFile, FileSystem hdfs)
+    public Excl_decoder add_decoder(String fileName, String decoderFile)
     {
         int p = fileName.charAt(17) - '0';
         Parallel_decoder pDecoder = new Parallel_decoder();
 
-        Parallel_excl_decoder[] temp = pDecoder.add_excl_decoder("testFile/perf-attr-config", p ,"testFile/"+fileName);
+        Excl_decoder excl_decoder = pDecoder.add_excl_decoder("testFile/perf-attr-config", p ,"testFile/"+fileName);
+        Vector<Parallel_excl_decoder> temp = excl_decoder.paral_decoder;
         decoders.add(pDecoder);
-        Excl_decoder excl_decoder = new Excl_decoder();
+        Configuration conf = new Configuration();
+        conf.set("fs.defaultFS", "hdfs://172.24.5.137:9000");
+
         //打开hdfs文件
         try {
             //Configuration conf = new Configuration();
             //FileSystem fs = FileSystem.get(URI.create(decoderFile), conf);
+            FileSystem hdfs = FileSystem.get(URI.create("hdfs://172.24.5.137:9000"), conf);
             Path path = new Path(decoderFile);
             FSDataOutputStream out = hdfs.append(path);
 
 
-
-            for (int i = 0; i < Arrays.stream(temp).count(); i++) {
+            Iterator<Parallel_excl_decoder> ite = temp.iterator();
+            for (int i=0; i < temp.size()&& ite.hasNext(); i++) {
                 int place = p * 8 + i;
-                temp[i].name = String.valueOf(place);
+                String name = String.valueOf(place);
+                ite.next().setName(name);
                 //把temp[i].name写在文件上
-                String h = temp[i].name + " ";
+                String h = name + " ";
                 out.write(h.getBytes("UTF-8"));
-                excl_decoder.paral_decoder.add(temp[i]);
             }
             out.close();
         }
         catch (Exception e)
         {
-
+            System.out.println(e.getMessage());
         }
         return excl_decoder;
         //关闭hdfs文件
@@ -59,7 +64,7 @@ public class Decoder implements Serializable {
     {
         int p = Integer.parseInt(name);
         //打开hdfs文件
-        String answer = paral_decoders.get(p).decode();
+        paral_decoders.get(p).decode();
         try {
             Configuration conf = new Configuration();
             FileSystem fs = FileSystem.get(URI.create(outputFile), conf);

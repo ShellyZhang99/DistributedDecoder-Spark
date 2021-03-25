@@ -10,26 +10,34 @@ public class Parallel_excl_decoder implements Serializable {
 
     public interface CLibrary extends Library {
 
-        Parallel_excl_decoder.CLibrary INSTANCE = (Parallel_excl_decoder.CLibrary)Native.loadLibrary("cpplib_shared",
-                Parallel_excl_decoder.CLibrary.class);
+        CLibrary INSTANCE = (Parallel_excl_decoder.CLibrary)Native.load("cpplib_shared.so", CLibrary.class);
 
         Pointer Parallel_excl_decoder_ctor();
         //Parallel_excl_decoder* Parallel_excl_decoder_add_excl_decoder(Parallel_excl_decoder *self, const char *config_filename, int primary, char* pt_filename)
-        String Parallel_excl_decoder_decode(Pointer self);
+        void Parallel_excl_decoder_decode(Pointer self);
+
+        Pointer Parallel_excl_decoder_get(int i);
 
     }
 
-    private Pointer self;
+    public Object self;
 
     public String name;
 
+    public void setName(String n){ name = n;}
+
     public Parallel_excl_decoder()
     {
-        self = Parallel_excl_decoder.CLibrary.INSTANCE.Parallel_excl_decoder_ctor();
+        self = CLibrary.INSTANCE.Parallel_excl_decoder_ctor();
     }
 
-    public String decode()
+    public Parallel_excl_decoder(int i)
     {
-        return Parallel_excl_decoder.CLibrary.INSTANCE.Parallel_excl_decoder_decode(self);
+        self = Parallel_excl_decoder.CLibrary.INSTANCE.Parallel_excl_decoder_get(i);
+    }
+
+    public void decode()
+    {
+        Parallel_excl_decoder.CLibrary.INSTANCE.Parallel_excl_decoder_decode((Pointer)self);
     }
 }

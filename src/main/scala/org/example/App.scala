@@ -3,6 +3,8 @@ import org.apache.hadoop
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs._
 import org.apache.hadoop.fs.permission.{FsAction, FsPermission}
+import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.util.CollectionAccumulator
 import org.apache.spark.{SparkConf, SparkContext}
 
 import java.io.{File, FileOutputStream}
@@ -11,7 +13,7 @@ import java.io.{File, FileOutputStream}
  * Hello world!
  *
  */
-object App{
+object App extends Serializable {
   def main(args: Array[String]): Unit= {
     if (args.length <= 1) {
       System.err.println("Usage: SparkWordCount <inputfile>")
@@ -43,7 +45,7 @@ object App{
       localFS.create(new Path(localFile));
       val outputStream : FileOutputStream = new FileOutputStream(new File(localFile));
 
-      val buffer = new Array[Byte](64000);
+      val buffer = new Array[Byte](32000);
 
       var len = inputStream.read(buffer)
       while (len != -1) {
@@ -59,19 +61,23 @@ object App{
     //HDFSHelper.copyFolderToLocal(hdfs, args(3), "/");
 
     val acc = sc.collectionAccumulator[Excl_decoder]("decoders")
-
     val rdd=sc.textFile(args(0)).cache().flatMap(line=>line.split(" "));
     val decoder = new Decoder();
     val decoderBroadcast = sc.broadcast(decoder)
     //rdd.foreach(item => acc.add(decoder.add_decoder(item.toString, "decoderFile")));
-    decoder.add_decoder("perf.data-aux-idx2.bin", "hdfs://172.24.5.137:9000/decoderFile", hdfs);
-    //rdd.foreach(item => if(item != null) {acc.add(decoderBroadcast.value.add_decoder(item, "decoderFile"));});
+    //decoder.add_decoder("perf.data-aux-idx2.bin", args(1));
+    rdd.foreach(item => forEachAddDecoder(acc, decoderBroadcast, item.toString, args(1)));
     decoder.add_parallel_decoders(acc.value);
 
-    val rdd2 = sc.textFile(args(1)).filter(line => line.contains(" "));
-    rdd2.foreach(item =>decoder.decode(item, args(2)));
+    val rdd2 = sc.textFile(args(1)).cache().flatMap(line=>line.split(" "));
+    rdd2.foreach(item =>decoder.decode(item.toString, args(2)));
     sc.stop()
 
+  }
+
+  def forEachAddDecoder(acc:CollectionAccumulator[Excl_decoder], decoderBroadcast: Broadcast[Decoder], item:String, args:String):Int={
+    acc.add(decoderBroadcast.value.add_decoder(item, args));
+    return 1;
   }
 
 

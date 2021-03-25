@@ -1,6 +1,5 @@
 org/example/Parallel_excl_decoder$CLibrary.class
 org/example/Parallel_decoder$CLibrary.class
-org/example/OperateHdfs.class
 org/example/Parallel_excl_decoder.class
 org/example/Parallel_decoder.class
 org/example/Decoder.class
