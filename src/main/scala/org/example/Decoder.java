@@ -15,8 +15,8 @@ public class Decoder implements Serializable {
     public Vector<Parallel_decoder> decoders;
     public Vector<Parallel_excl_decoder> paral_decoders;
 
-    public Decoder()
-    {
+    public Decoder() {
+
         decoders = new Vector<Parallel_decoder>(8);
         paral_decoders = new Vector<Parallel_excl_decoder>(64);
     }
@@ -64,14 +64,27 @@ public class Decoder implements Serializable {
     {
         int p = Integer.parseInt(name);
         //打开hdfs文件
-        paral_decoders.get(p).decode();
+        Iterator<Parallel_excl_decoder> ite = paral_decoders.iterator();
+        Parallel_excl_decoder pdecoder = null;
+        while(ite.hasNext())
+        {
+            Parallel_excl_decoder t = ite.next();
+            if(t.name.equals(name))
+            {
+                pdecoder = t;
+                break;
+            }
+        }
+        String temp = "";
+        if(pdecoder != null)
+            temp = pdecoder.decode();
         try {
             Configuration conf = new Configuration();
             FileSystem fs = FileSystem.get(URI.create(outputFile), conf);
             Path path = new Path(outputFile);
             FSDataOutputStream out = fs.append(path);
             out.write(outputFile.getBytes("UTF-8"));
-            String temp = "\n";
+            temp += "\n";
             out.write(temp.getBytes(StandardCharsets.UTF_8));
             out.close();
         }

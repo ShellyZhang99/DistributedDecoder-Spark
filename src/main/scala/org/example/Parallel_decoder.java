@@ -17,15 +17,18 @@ public class Parallel_decoder implements Serializable {
 
         Pointer Parallel_decoder_ctor();
         //Parallel_excl_decoder* Parallel_decoder_add_excl_decoder(Parallel_decoder *self, const char *config_filename, int primary, char* pt_filename)
-        void Parallel_decoder_add_excl_decoder(Pointer self, Pointer config_filename, int primary, Pointer pt_filename);
+        int Parallel_decoder_add_excl_decoder(Pointer self, Pointer config_filename, int primary, Pointer pt_filename);
 
     }
 
-    public Object self;
+    public Pointer self;
 
     public Parallel_decoder()
     {
-        self = CLibrary.INSTANCE.Parallel_decoder_ctor();
+       self = CLibrary.INSTANCE.Parallel_decoder_ctor();
+        /*self = new MyPointer(Pointer.nativeValue(temp));
+
+        self.setPointer(0, temp);*/
 
     }
 
@@ -35,11 +38,15 @@ public class Parallel_decoder implements Serializable {
         pconfig_filename.setString(0, config_filename);
         Pointer ppt_filename = new Memory(pt_filename.length()+1);
         ppt_filename.setString(0, pt_filename);
-        CLibrary.INSTANCE.Parallel_decoder_add_excl_decoder((Pointer)self, pconfig_filename, primary, ppt_filename);
+        int result = CLibrary.INSTANCE.Parallel_decoder_add_excl_decoder(self, pconfig_filename, primary, ppt_filename);
+
         Excl_decoder excl_decoders = new Excl_decoder();
-        for(int i=0; i<8; i++)
+        if(result >= 0)
         {
-            excl_decoders.paral_decoder.add(new Parallel_excl_decoder(i));
+            for(int i=0; i<8; i++)
+            {
+                excl_decoders.paral_decoder.add(new Parallel_excl_decoder(self, i));
+            }
         }
         return excl_decoders;
     }

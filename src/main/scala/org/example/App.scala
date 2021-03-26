@@ -20,7 +20,7 @@ object App extends Serializable {
       System.exit(1)
     }
 
-    val conf = new SparkConf().setMaster("local").setAppName("SparkWordCount")
+    val conf = new SparkConf().setMaster("local[2]").setAppName("SparkWordCount")
     conf.set("fs.defaultFS", "hdfs://172.24.5.137:9000")
     val sc = new SparkContext(conf)
     //sc.addFile(args(0))
@@ -63,14 +63,15 @@ object App extends Serializable {
     val acc = sc.collectionAccumulator[Excl_decoder]("decoders")
     val rdd=sc.textFile(args(0)).cache().flatMap(line=>line.split(" "));
     val decoder = new Decoder();
-    val decoderBroadcast = sc.broadcast(decoder)
+    //val decoderBroadcast = sc.broadcast(decoder)
     //rdd.foreach(item => acc.add(decoder.add_decoder(item.toString, "decoderFile")));
-    //decoder.add_decoder("perf.data-aux-idx2.bin", args(1));
-    rdd.foreach(item => forEachAddDecoder(acc, decoderBroadcast, item.toString, args(1)));
+    decoder.add_decoder("perf.data-aux-idx2.bin", args(1));
+    //rdd.foreach(item => forEachAddDecoder(acc, decoderBroadcast, item.toString, args(1)));
     decoder.add_parallel_decoders(acc.value);
 
-    val rdd2 = sc.textFile(args(1)).cache().flatMap(line=>line.split(" "));
-    rdd2.foreach(item =>decoder.decode(item.toString, args(2)));
+    //val rdd2 = sc.textFile(args(1)).cache().flatMap(line=>line.split(" "));
+    decoder.decode("17", args(2))
+    //rdd2.foreach(item =>decoder.decode(item.toString, args(2)));
     sc.stop()
 
   }

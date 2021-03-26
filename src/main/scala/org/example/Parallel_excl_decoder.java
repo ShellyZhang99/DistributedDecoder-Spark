@@ -14,13 +14,13 @@ public class Parallel_excl_decoder implements Serializable {
 
         Pointer Parallel_excl_decoder_ctor();
         //Parallel_excl_decoder* Parallel_excl_decoder_add_excl_decoder(Parallel_excl_decoder *self, const char *config_filename, int primary, char* pt_filename)
-        void Parallel_excl_decoder_decode(Pointer self);
+        Pointer Parallel_excl_decoder_decode(Pointer self);
 
-        Pointer Parallel_excl_decoder_get(int i);
+        Pointer Parallel_excl_decoder_get(Pointer dec, int i);
 
     }
 
-    public Object self;
+    public Pointer self;
 
     public String name;
 
@@ -28,16 +28,19 @@ public class Parallel_excl_decoder implements Serializable {
 
     public Parallel_excl_decoder()
     {
-        self = CLibrary.INSTANCE.Parallel_excl_decoder_ctor();
+       self = CLibrary.INSTANCE.Parallel_excl_decoder_ctor();
+        /*self = new MyPointer(Pointer.nativeValue(temp));
+        self.setPointer(0, temp);*/
     }
 
-    public Parallel_excl_decoder(int i)
+    public Parallel_excl_decoder(Pointer dec, int i)
     {
-        self = Parallel_excl_decoder.CLibrary.INSTANCE.Parallel_excl_decoder_get(i);
+        self = Parallel_excl_decoder.CLibrary.INSTANCE.Parallel_excl_decoder_get(dec, i);
     }
 
-    public void decode()
+    public String decode()
     {
-        Parallel_excl_decoder.CLibrary.INSTANCE.Parallel_excl_decoder_decode((Pointer)self);
+        Pointer temp = Parallel_excl_decoder.CLibrary.INSTANCE.Parallel_excl_decoder_decode(self);
+        return temp.getString(0);
     }
 }

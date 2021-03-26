@@ -1,0 +1,5 @@
+hdfs://172.24.5.137:9000/test1/outputFile.txtp�8�
+hdfs://172.24.5.137:9000/test1/outputFile.txt
+hdfs://172.24.5.137:9000/test1/outputFile.txt
+hdfs://172.24.5.137:9000/test1/outputFile.txt
+hdfs://172.24.5.137:9000/test1/outputFile.txt
