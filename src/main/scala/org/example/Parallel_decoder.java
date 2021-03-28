@@ -21,16 +21,17 @@ public class Parallel_decoder implements Serializable {
 
     }
 
-    public Pointer self;
+    public MyPointer self;
 
     public Parallel_decoder()
     {
-       self = CLibrary.INSTANCE.Parallel_decoder_ctor();
+        self = new MyPointer(CLibrary.INSTANCE.Parallel_decoder_ctor());
         /*self = new MyPointer(Pointer.nativeValue(temp));
 
         self.setPointer(0, temp);*/
 
     }
+
 
     public Excl_decoder add_excl_decoder(String config_filename, int primary, String pt_filename)
     {
@@ -38,7 +39,7 @@ public class Parallel_decoder implements Serializable {
         pconfig_filename.setString(0, config_filename);
         Pointer ppt_filename = new Memory(pt_filename.length()+1);
         ppt_filename.setString(0, pt_filename);
-        int result = CLibrary.INSTANCE.Parallel_decoder_add_excl_decoder(self, pconfig_filename, primary, ppt_filename);
+        int result = CLibrary.INSTANCE.Parallel_decoder_add_excl_decoder(self.pointer, pconfig_filename, primary, ppt_filename);
 
         Excl_decoder excl_decoders = new Excl_decoder();
         if(result >= 0)

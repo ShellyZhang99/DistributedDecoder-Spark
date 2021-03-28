@@ -6,7 +6,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.web.WebHdfsFileSystem;
 
-import java.io.Serializable;
+import java.io.*;
 import java.lang.String;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -77,15 +77,24 @@ public class Decoder implements Serializable {
         }
         String temp = "";
         if(pdecoder != null)
-            temp = pdecoder.decode();
+            temp = pdecoder.decode(p);
         try {
             Configuration conf = new Configuration();
             FileSystem fs = FileSystem.get(URI.create(outputFile), conf);
             Path path = new Path(outputFile);
             FSDataOutputStream out = fs.append(path);
-            out.write(outputFile.getBytes("UTF-8"));
-            temp += "\n";
-            out.write(temp.getBytes(StandardCharsets.UTF_8));
+            File file = new File(temp);
+            if(file.isFile() && file.exists()) {
+                InputStreamReader isr = new InputStreamReader(new FileInputStream(file), "utf-8");
+                BufferedReader br = new BufferedReader(isr);
+                String lineTxt = null;
+                while ((lineTxt = br.readLine()) != null) {
+                    out.write(lineTxt.getBytes(StandardCharsets.UTF_8));
+                }
+                br.close();
+            } else {
+                System.out.println("文件不存在!");
+            }
             out.close();
         }
         catch (Exception e)
