@@ -23,23 +23,23 @@ public class Decoder implements Serializable {
 
     public Excl_decoder add_decoder(String fileName, String decoderFile)
     {
+        try {
+        System.out.println("Add decoder 1\n");
         int p = fileName.charAt(17) - '0';
+        System.out.println("Add decoder 2\n");
         Parallel_decoder pDecoder = new Parallel_decoder();
-
-        Excl_decoder excl_decoder = pDecoder.add_excl_decoder("testFile/perf-attr-config", p ,"testFile/"+fileName);
+        System.out.println("Add decoder 3");
+        Excl_decoder excl_decoder = pDecoder.add_excl_decoder("/home/bigdataflow/DistributedDecoder/Test0/perf-attr-config", p ,"/home/bigdataflow/DistributedDecoder/Test0/"+fileName);
+        System.out.println("Add decoder 4");
         Vector<Parallel_excl_decoder> temp = excl_decoder.paral_decoder;
         decoders.add(pDecoder);
+            System.out.println("Add decoder 5");
         Configuration conf = new Configuration();
-        conf.set("fs.defaultFS", "hdfs://172.24.5.137:9000");
-
-        //打开hdfs文件
-        try {
-            //Configuration conf = new Configuration();
-            //FileSystem fs = FileSystem.get(URI.create(decoderFile), conf);
-            FileSystem hdfs = FileSystem.get(URI.create("hdfs://172.24.5.137:9000"), conf);
+        conf.set("fs.defaultFS", "hdfs://master:9000");
+            FileSystem hdfs = FileSystem.get(URI.create("hdfs://master:9000"), conf);
             Path path = new Path(decoderFile);
             FSDataOutputStream out = hdfs.append(path);
-
+            System.out.println("Add decoder 6");
 
             Iterator<Parallel_excl_decoder> ite = temp.iterator();
             for (int i=0; i < temp.size()&& ite.hasNext(); i++) {
@@ -50,13 +50,18 @@ public class Decoder implements Serializable {
                 String h = name + " ";
                 out.write(h.getBytes("UTF-8"));
             }
+            System.out.println("Add decoder 7");
             out.close();
+
+
+            return excl_decoder;
         }
         catch (Exception e)
         {
             System.out.println(e.getMessage());
         }
-        return excl_decoder;
+
+        return null;
         //关闭hdfs文件
     }
 

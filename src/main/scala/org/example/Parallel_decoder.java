@@ -12,8 +12,7 @@ import java.util.Arrays;
 public class Parallel_decoder implements Serializable {
     public interface CLibrary extends Library {
 
-        CLibrary INSTANCE = (CLibrary)Native.load("cpplib_shared.so",
-                CLibrary.class);
+        CLibrary INSTANCE = (CLibrary)Native.load("../../cpplib_shared.so", CLibrary.class);
 
         Pointer Parallel_decoder_ctor();
         //Parallel_excl_decoder* Parallel_decoder_add_excl_decoder(Parallel_decoder *self, const char *config_filename, int primary, char* pt_filename)
@@ -26,12 +25,7 @@ public class Parallel_decoder implements Serializable {
     public Parallel_decoder()
     {
         self = new MyPointer(CLibrary.INSTANCE.Parallel_decoder_ctor());
-        /*self = new MyPointer(Pointer.nativeValue(temp));
-
-        self.setPointer(0, temp);*/
-
     }
-
 
     public Excl_decoder add_excl_decoder(String config_filename, int primary, String pt_filename)
     {
@@ -51,4 +45,6 @@ public class Parallel_decoder implements Serializable {
         }
         return excl_decoders;
     }
+
+
 }

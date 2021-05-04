@@ -7,7 +7,7 @@ import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.util.CollectionAccumulator
 import org.apache.spark.{SparkConf, SparkContext}
 
-import java.io.{File, FileOutputStream}
+import java.io.{File, FileOutputStream, PrintWriter, StringWriter}
 
 /**
  * Hello world!
@@ -15,68 +15,90 @@ import java.io.{File, FileOutputStream}
  */
 object App extends Serializable {
   def main(args: Array[String]): Unit= {
-    if (args.length <= 1) {
-      System.err.println("Usage: SparkWordCount <inputfile>")
-      System.exit(1)
-    }
+    try {
 
-    val conf = new SparkConf().setMaster("local").setAppName("SparkWordCount").setExecutorEnv("executor-memory", "2g")
-    conf.set("fs.defaultFS", "hdfs://172.24.5.137:9000")
-    val sc = new SparkContext(conf)
-    //sc.addFile(args(0))
+      val conf = new SparkConf().setMaster("spark://114.212.84.19:7077")
+      conf.set("fs.defaultFS", "hdfs://114.212.84.19:9000")
+      val sc = new SparkContext(conf)
+      //sc.addFile(args(0))
 
-    //sc.addFile(args(1))
-    //sc.addFile(args(2))
-    val cfg = new Configuration();
-    //cfg.set("fs.defaultFS", "hdfs://172.24.5.137:9000");
-    cfg.addResource(new Path("core-site.xml"));
-    val hdfs : FileSystem = FileSystem.get(cfg)
-    val localFS : FileSystem = FileSystem.get(new Configuration());
-    val status = hdfs.listStatus(new Path(args(3)))
-    val filePermission = new FsPermission(
-      FsAction.ALL, // user
-      FsAction.ALL, // group
-      FsAction.ALL);
-    localFS.setPermission(new Path("testFile/"), filePermission)
-    for (i <- 0 until status.length) {
-      val inputStream = hdfs.open(status(i).getPath)
-      val nameExcludeSource : String = status(i).getPath.getName.toString
-      val localFile : String = "testFile/" + nameExcludeSource;
-      localFS.create(new Path(localFile));
-      val outputStream : FileOutputStream = new FileOutputStream(new File(localFile));
+      //sc.addFile(args(1))
+      //sc.addFile(args(2))
+      val cfg = new Configuration();
 
-      val buffer = new Array[Byte](32000);
+      println("\nYes0\n")
+      cfg.set("fs.defaultFS", "hdfs://master:9000");
+      //cfg.addResource(new Path("core-site.xml"));
+      println("\nYes1\n")
+      val hdfs: FileSystem = FileSystem.get(cfg)
+      println("\nYes2\n")
+      val localFS: FileSystem = FileSystem.get(new Configuration());
+      println("\nYes3\n")
+      val a = sc.textFile("hdfs://master:9000/DistributedDecoderTest/Test0/inputFile.txt").toString()
+      println(a)
+      println("\nYes32\n")
+      val status = hdfs.listFiles(new Path("hdfs://master:9000/DistributedDecoderTest/Test0/"), false)
+      println("\nYes4\n")
+      val filePermission = new FsPermission(FsAction.ALL, FsAction.ALL, FsAction.ALL);
+      println("\nYes5\n")
+      localFS.setPermission(new Path("/home/bigdataflow/DistributedDecoder/Test1/"), filePermission)
+      println("\nYes6\n")
+     while (status.hasNext) {
+       val temp = status.next()
+        val inputStream = hdfs.open(temp.getPath)
+        val nameExcludeSource: String = temp.getPath.getName.toString
+        val localFile: String = "/home/bigdataflow/DistributedDecoder/Test1/" + nameExcludeSource;
+        localFS.create(new Path(localFile));
+        val outputStream: FileOutputStream = new FileOutputStream(new File(localFile));
 
-      var len = inputStream.read(buffer)
-      while (len != -1) {
-        outputStream.write(buffer, 0, len - 1)
-        len = inputStream.read(buffer)
+        val buffer = new Array[Byte](32000);
+
+        var len = inputStream.read(buffer)
+        while (len != -1) {
+          outputStream.write(buffer, 0, len - 1)
+          len = inputStream.read(buffer)
+        }
+        outputStream.flush()
+        inputStream.close()
+        outputStream.close()
       }
-      outputStream.flush()
-      inputStream.close()
-      outputStream.close()
+      println("\nYes7\n")
+      //val allChildren : Array[File] = hdfs.listFiles(new Path(args(3)), false);
+      //HDFSHelper.copyFolderToLocal(hdfs, args(3), "/");
+
+      val acc = sc.collectionAccumulator[Excl_decoder]("decoders")
+      println("\nYes8\n")
+      val rdd = sc.textFile("hdfs://master:9000/DistributedDecoderTest/Test0/inputFile.txt").cache().flatMap(line => line.split(" "));
+      println("\nYes9\n")
+      val decoder = new Decoder();
+      println("\nYes10\n")
+      val decoderBroadcast = sc.broadcast(decoder)
+      println("\nYes11\n")
+      rdd.foreach(item => acc.add(decoderBroadcast.value.add_decoder(item, "hdfs://master:9000/DistributedDecoderTest/Test0/decoderFile.txt")))
+      println("\nYes12\n")
+      decoderBroadcast.value.add_parallel_decoders(acc.value);
+      println("\nYes13\n")
+      val rdd2 = sc.textFile("hdfs://master:9000/DistributedDecoderTest/Test0/decoderFile.txt").cache().flatMap(line => line.split(" "));
+      println("\nYes14\n")
+      //decoderBroadcast.value.decode("16", args(2))
+      rdd2.foreach(item => decoderBroadcast.value.decode(item.toString, "hdfs://master:9000/DistributedDecoderTest/Test0/outputFile.txt"));
+      println("\nYes15\n")
+      sc.stop()
+
     }
-
-    //val allChildren : Array[File] = hdfs.listFiles(new Path(args(3)), false);
-    //HDFSHelper.copyFolderToLocal(hdfs, args(3), "/");
-
-    val acc = sc.collectionAccumulator[Excl_decoder]("decoders")
-    val rdd=sc.textFile(args(0)).cache().flatMap(line=>line.split(" "));
-    val decoder = new Decoder();
-    val decoderBroadcast = sc.broadcast(decoder)
-    //rdd.foreach(item => acc.add(decoder.add_decoder(item.toString, "decoderFile")));
-    //decoder.add_decoder("perf.data-aux-idx2.bin", args(1));
-    rdd.foreach(item => forEachAddDecoder(acc, decoderBroadcast, item.toString, args(1)));
-    decoderBroadcast.value.add_parallel_decoders(acc.value);
-    val rdd2 = sc.textFile(args(1)).cache().flatMap(line=>line.split(" "));
-    //decoderBroadcast.value.decode("16", args(2))
-    rdd2.foreach(item =>decoderBroadcast.value.decode(item.toString, args(2)));
-    sc.stop()
+    catch{
+      case e : Throwable=>{val sw:StringWriter = new StringWriter()
+        val pw:PrintWriter = new PrintWriter(sw)
+        e.printStackTrace(pw)
+        println("======>>printStackTraceStr Exception: " + e.getClass() + "\n==>" + e.printStackTrace() + e.getMessage())}
+    }
 
   }
 
   def forEachAddDecoder(acc:CollectionAccumulator[Excl_decoder], decoderBroadcast: Broadcast[Decoder], item:String, args:String):Int={
+    println("\nAdd decoder1\n");
     acc.add(decoderBroadcast.value.add_decoder(item, args));
+    println("\nAdd decoder 8\n")
     return 1;
   }
 
