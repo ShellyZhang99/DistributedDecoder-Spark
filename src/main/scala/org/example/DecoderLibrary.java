@@ -9,7 +9,7 @@ import java.io.Serializable;
 public interface DecoderLibrary extends Library, Serializable {
 
 
-        public DecoderLibrary INSTANCE = (DecoderLibrary) Native.load("cpplib_shared.so", DecoderLibrary.class);
+        DecoderLibrary INSTANCE = (DecoderLibrary) Native.load("cpplib_shared.so", DecoderLibrary.class);
 
         Pointer Parallel_excl_decoder_ctor();
         //Parallel_excl_decoder* Parallel_excl_decoder_add_excl_decoder(Parallel_excl_decoder *self, const char *config_filename, int primary, char* pt_filename)
