@@ -10,21 +10,12 @@ import  java.util.Vector;
 import java.util.Arrays;
 
 public class Parallel_decoder implements Serializable {
-    public interface CLibrary extends Library {
-
-        CLibrary INSTANCE = (CLibrary)Native.load("cpplib_shared.so", CLibrary.class);
-
-        Pointer Parallel_decoder_ctor();
-        //Parallel_excl_decoder* Parallel_decoder_add_excl_decoder(Parallel_decoder *self, const char *config_filename, int primary, char* pt_filename)
-        int Parallel_decoder_add_excl_decoder(Pointer self, Pointer config_filename, int primary, Pointer pt_filename);
-
-    }
 
     public MyPointer self;
 
     public Parallel_decoder()
     {
-        self = new MyPointer(CLibrary.INSTANCE.Parallel_decoder_ctor());
+        self = new MyPointer(DecoderLibrary.INSTANCE.Parallel_decoder_ctor());
     }
 
     public Excl_decoder add_excl_decoder(String config_filename, int primary, String pt_filename)
@@ -33,7 +24,7 @@ public class Parallel_decoder implements Serializable {
         pconfig_filename.setString(0, config_filename);
         Pointer ppt_filename = new Memory(pt_filename.length()+1);
         ppt_filename.setString(0, pt_filename);
-        int result = CLibrary.INSTANCE.Parallel_decoder_add_excl_decoder(self.pointer, pconfig_filename, primary, ppt_filename);
+        int result = DecoderLibrary.INSTANCE.Parallel_decoder_add_excl_decoder(self.pointer, pconfig_filename, primary, ppt_filename);
 
         Excl_decoder excl_decoders = new Excl_decoder();
         if(result >= 0)
