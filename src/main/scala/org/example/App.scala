@@ -16,7 +16,7 @@ import java.io.{File, FileOutputStream}
 object App extends Serializable {
   def main(args: Array[String]): Unit= {
 
-    val conf = new SparkConf().setMaster("local").setAppName("SparkWordCount").setExecutorEnv("executor-memory", "2g")
+    val conf = new SparkConf().setMaster("local").setAppName("SparkWordCount").setExecutorEnv("executor-memory", "20g")
     conf.set("fs.defaultFS", "hdfs://192.168.1.106:9000")
     val sc = new SparkContext(conf)
     //sc.addFile(args(0))
