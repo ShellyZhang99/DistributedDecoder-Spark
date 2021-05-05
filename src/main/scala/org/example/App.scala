@@ -15,13 +15,9 @@ import java.io.{File, FileOutputStream}
  */
 object App extends Serializable {
   def main(args: Array[String]): Unit= {
-    if (args.length <= 1) {
-      System.err.println("Usage: SparkWordCount <inputfile>")
-      System.exit(1)
-    }
 
     val conf = new SparkConf().setMaster("local").setAppName("SparkWordCount").setExecutorEnv("executor-memory", "2g")
-    conf.set("fs.defaultFS", "hdfs://172.24.5.137:9000")
+    conf.set("fs.defaultFS", "hdfs://192.168.1.106:9000")
     val sc = new SparkContext(conf)
     //sc.addFile(args(0))
 
@@ -32,16 +28,16 @@ object App extends Serializable {
     cfg.addResource(new Path("core-site.xml"));
     val hdfs : FileSystem = FileSystem.get(cfg)
     val localFS : FileSystem = FileSystem.get(new Configuration());
-    val status = hdfs.listStatus(new Path(args(3)))
+    val status = hdfs.listStatus(new Path("hdfs://192.168.1.106:9000/Test0"))
     val filePermission = new FsPermission(
       FsAction.ALL, // user
       FsAction.ALL, // group
       FsAction.ALL);
-    localFS.setPermission(new Path("testFile/"), filePermission)
+    localFS.setPermission(new Path("./"), filePermission)
     for (i <- 0 until status.length) {
       val inputStream = hdfs.open(status(i).getPath)
       val nameExcludeSource : String = status(i).getPath.getName.toString
-      val localFile : String = "testFile/" + nameExcludeSource;
+      val localFile : String = nameExcludeSource;
       localFS.create(new Path(localFile));
       val outputStream : FileOutputStream = new FileOutputStream(new File(localFile));
 
@@ -61,16 +57,16 @@ object App extends Serializable {
     //HDFSHelper.copyFolderToLocal(hdfs, args(3), "/");
 
     val acc = sc.collectionAccumulator[Excl_decoder]("decoders")
-    val rdd=sc.textFile(args(0)).cache().flatMap(line=>line.split(" "));
+    val rdd=sc.textFile("hdfs://192.168.1.106:9000/Test0/inputFile.txt").cache().flatMap(line=>line.split(" "));
     val decoder = new Decoder();
     val decoderBroadcast = sc.broadcast(decoder)
     //rdd.foreach(item => acc.add(decoder.add_decoder(item.toString, "decoderFile")));
     //decoder.add_decoder("perf.data-aux-idx2.bin", args(1));
-    rdd.foreach(item => forEachAddDecoder(acc, decoderBroadcast, item.toString, args(1)));
+    rdd.foreach(item => forEachAddDecoder(acc, decoderBroadcast, item.toString, "hdfs://192.168.1.106:9000/Test0/decoderFile.txt"));
     decoderBroadcast.value.add_parallel_decoders(acc.value);
-    val rdd2 = sc.textFile(args(1)).cache().flatMap(line=>line.split(" "));
+    val rdd2 = sc.textFile("hdfs://192.168.1.106:9000/Test0/decoderFile.txt").cache().flatMap(line=>line.split(" "));
     //decoderBroadcast.value.decode("16", args(2))
-    rdd2.foreach(item =>decoderBroadcast.value.decode(item.toString, args(2)));
+    rdd2.foreach(item =>decoderBroadcast.value.decode(item.toString, "hdfs://192.168.1.106:9000/Test0/outputFile.txt"));
     sc.stop()
 
   }

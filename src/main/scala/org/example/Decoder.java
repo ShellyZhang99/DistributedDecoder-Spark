@@ -26,17 +26,17 @@ public class Decoder implements Serializable {
         int p = fileName.charAt(17) - '0';
         Parallel_decoder pDecoder = new Parallel_decoder();
 
-        Excl_decoder excl_decoder = pDecoder.add_excl_decoder("testFile/perf-attr-config", p ,"testFile/"+fileName);
+        Excl_decoder excl_decoder = pDecoder.add_excl_decoder("perf-attr-config", p ,fileName);
         Vector<Parallel_excl_decoder> temp = excl_decoder.paral_decoder;
         decoders.add(pDecoder);
         Configuration conf = new Configuration();
-        conf.set("fs.defaultFS", "hdfs://172.24.5.137:9000");
+        conf.set("fs.defaultFS", "hdfs://192.168.1.106:9000");
 
         //打开hdfs文件
         try {
             //Configuration conf = new Configuration();
             //FileSystem fs = FileSystem.get(URI.create(decoderFile), conf);
-            FileSystem hdfs = FileSystem.get(URI.create("hdfs://172.24.5.137:9000"), conf);
+            FileSystem hdfs = FileSystem.get(URI.create("hdfs://192.168.1.106:9000"), conf);
             Path path = new Path(decoderFile);
             FSDataOutputStream out = hdfs.append(path);
 
