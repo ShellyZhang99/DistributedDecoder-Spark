@@ -12,7 +12,7 @@ import java.util.Arrays;
 public class Parallel_decoder implements Serializable {
     public interface CLibrary extends Library {
 
-        CLibrary INSTANCE = (CLibrary)Native.load("../../cpplib_shared.so", CLibrary.class);
+        CLibrary INSTANCE = (CLibrary)Native.load("cpplib_shared.so", CLibrary.class);
 
         Pointer Parallel_decoder_ctor();
         //Parallel_excl_decoder* Parallel_decoder_add_excl_decoder(Parallel_decoder *self, const char *config_filename, int primary, char* pt_filename)

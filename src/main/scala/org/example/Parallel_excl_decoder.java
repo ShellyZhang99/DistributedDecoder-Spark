@@ -9,7 +9,7 @@ import java.io.Serializable;
 public class Parallel_excl_decoder implements Serializable {
     public interface CLibrary extends Library {
 
-        CLibrary INSTANCE = (CLibrary)Native.load("../../cpplib_shared.so", CLibrary.class);
+        CLibrary INSTANCE = (CLibrary)Native.load("cpplib_shared.so", CLibrary.class);
 
         Pointer Parallel_excl_decoder_ctor();
         //Parallel_excl_decoder* Parallel_excl_decoder_add_excl_decoder(Parallel_excl_decoder *self, const char *config_filename, int primary, char* pt_filename)
