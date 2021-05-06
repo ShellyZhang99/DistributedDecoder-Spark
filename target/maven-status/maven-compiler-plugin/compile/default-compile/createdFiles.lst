@@ -1,7 +1,6 @@
-org/example/Parallel_excl_decoder$CLibrary.class
-org/example/Parallel_decoder$CLibrary.class
 org/example/Parallel_excl_decoder.class
 org/example/Parallel_decoder.class
 org/example/MyPointer.class
 org/example/Decoder.class
+org/example/ExtraDecoder.class
 org/example/Excl_decoder.class

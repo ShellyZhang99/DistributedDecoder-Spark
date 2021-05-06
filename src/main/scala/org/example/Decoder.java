@@ -12,78 +12,56 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 public class Decoder implements Serializable {
-    public Vector<Parallel_decoder> decoders;
-    public Vector<Parallel_excl_decoder> paral_decoders;
 
-    public Decoder() {
 
-        decoders = new Vector<Parallel_decoder>(8);
-        paral_decoders = new Vector<Parallel_excl_decoder>(64);
-    }
-
-    public Excl_decoder add_decoder(String fileName, String decoderFile)
+    public void add_decoder(String fileName, String decoderFile)
     {
         try {
-        System.out.println("Add decoder 1\n");
-        int p = fileName.charAt(17) - '0';
-        System.out.println("Add decoder 2\n");
-        Parallel_decoder pDecoder = new Parallel_decoder();
-        System.out.println("Add decoder 3");
-        Excl_decoder excl_decoder = pDecoder.add_excl_decoder("/home/bigdataflow/DistributedDecoder/Test0/perf-attr-config", p ,"/home/bigdataflow/DistributedDecoder/Test0/"+fileName);
-        System.out.println("Add decoder 4");
-        Vector<Parallel_excl_decoder> temp = excl_decoder.paral_decoder;
-        decoders.add(pDecoder);
-            System.out.println("Add decoder 5");
-        Configuration conf = new Configuration();
-        conf.set("fs.defaultFS", "hdfs://master:9000");
-            FileSystem hdfs = FileSystem.get(URI.create("hdfs://master:9000"), conf);
-            Path path = new Path(decoderFile);
-            FSDataOutputStream out = hdfs.append(path);
-            System.out.println("Add decoder 6");
-
-            Iterator<Parallel_excl_decoder> ite = temp.iterator();
-            for (int i=0; i < temp.size()&& ite.hasNext(); i++) {
-                int place = p * 8 + i;
-                String name = String.valueOf(place);
-                ite.next().setName(name);
-                //把temp[i].name写在文件上
-                String h = name + " ";
-                out.write(h.getBytes("UTF-8"));
-            }
-            System.out.println("Add decoder 7");
-            out.close();
-
-
-            return excl_decoder;
+            int p = fileName.charAt(17) - '0';
+                Configuration conf = new Configuration();
+                conf.set("fs.defaultFS", "hdfs://master:9000");
+                FileSystem hdfs = FileSystem.get(URI.create("hdfs://master:9000"), conf);
+                Path path = new Path(decoderFile);
+                FSDataOutputStream out = hdfs.append(path);
+                for (int i = 0; i < 8; i++) {
+                    int place = p * 8 + i;
+                    String name = String.valueOf(place);
+                    //把temp[i].name写在文件上
+                    String h = name + " ";
+                    fileWriterMethod("/home/bigdataflow/DistributedDecoder/Test0/outputFileTemp.txt", "\n"+h+"\n");
+                    out.write(h.getBytes("UTF-8"));
+                }
+                out.close();
         }
         catch (Exception e)
         {
-            System.out.println(e.getMessage());
-        }
+            try
+            {
+                fileWriterMethod("/home/bigdataflow/DistributedDecoder/Test0/outputFileTemp.txt", "\n"+e.getMessage());
 
-        return null;
+            }
+            catch(Exception e2)
+            {
+                System.out.println(e2.getMessage());
+            }
+        }
         //关闭hdfs文件
     }
 
-    public void decode(String name, String outputFile)
-    {
-        int p = Integer.parseInt(name);
-        //打开hdfs文件
-        Iterator<Parallel_excl_decoder> ite = paral_decoders.iterator();
-        Parallel_excl_decoder pdecoder = null;
-        while(ite.hasNext())
-        {
-            Parallel_excl_decoder t = ite.next();
-            if(t.name.equals(name))
-            {
-                pdecoder = t;
-                break;
-            }
+    public static void fileWriterMethod(String filepath, String content) throws IOException {
+        try (FileWriter fileWriter = new FileWriter(filepath)) {
+            fileWriter.append(content);
         }
-        String temp = "";
-        if(pdecoder != null)
-            temp = pdecoder.decode(p);
+    }
+
+    public void decode(ExtraDecoder extraDecoder, String name, String outputFile)
+    {
         try {
+        int p = Integer.parseInt(name);
+        Parallel_excl_decoder pdecoder = new Parallel_excl_decoder();
+        String temp = "";
+            temp = pdecoder.decode(extraDecoder, p);
+
             Configuration conf = new Configuration();
             FileSystem fs = FileSystem.get(URI.create(outputFile), conf);
             Path path = new Path(outputFile);
@@ -97,24 +75,22 @@ public class Decoder implements Serializable {
                     out.write(lineTxt.getBytes(StandardCharsets.UTF_8));
                 }
                 br.close();
-            } else {
-                System.out.println("文件不存在!");
             }
             out.close();
         }
         catch (Exception e)
         {
+            try
+            {
+                fileWriterMethod("/home/bigdataflow/DistributedDecoder/Test0/outputFileTemp.txt", "\n"+e.getMessage());
 
+            }
+            catch(Exception e2)
+            {
+                System.out.println(e2.getMessage());
+            }
         }
         //写进文件
         //关闭hdfs文件
-    }
-
-    public void add_parallel_decoders(List<Excl_decoder> decoders)
-    {
-        Iterator<Excl_decoder> iter = decoders.iterator();
-        while(iter.hasNext()) {
-            paral_decoders.addAll(iter.next().paral_decoder);
-        }
     }
 }

@@ -24,8 +24,9 @@ object App extends Serializable {
 
       //sc.addFile(args(1))
       //sc.addFile(args(2))
+      System.load("/home/bigdataflow/DistributedDecoder/libDecoder.so");
+      val extradecoder = sc.broadcast(new  ExtraDecoder());
       val cfg = new Configuration();
-
       println("\nYes0\n")
       cfg.set("fs.defaultFS", "hdfs://master:9000");
       //cfg.addResource(new Path("core-site.xml"));
@@ -33,55 +34,18 @@ object App extends Serializable {
       val hdfs: FileSystem = FileSystem.get(cfg)
       println("\nYes2\n")
       val localFS: FileSystem = FileSystem.get(new Configuration());
-      println("\nYes3\n")
-      val a = sc.textFile("hdfs://master:9000/DistributedDecoderTest/Test0/inputFile.txt").toString()
-      println(a)
-      println("\nYes32\n")
-      val status = hdfs.listFiles(new Path("hdfs://master:9000/DistributedDecoderTest/Test0/"), false)
-      println("\nYes4\n")
-      val filePermission = new FsPermission(FsAction.ALL, FsAction.ALL, FsAction.ALL);
-      println("\nYes5\n")
-      localFS.setPermission(new Path("/home/bigdataflow/DistributedDecoder/Test1/"), filePermission)
-      println("\nYes6\n")
-     while (status.hasNext) {
-       val temp = status.next()
-        val inputStream = hdfs.open(temp.getPath)
-        val nameExcludeSource: String = temp.getPath.getName.toString
-        val localFile: String = "/home/bigdataflow/DistributedDecoder/Test1/" + nameExcludeSource;
-        localFS.create(new Path(localFile));
-        val outputStream: FileOutputStream = new FileOutputStream(new File(localFile));
-
-        val buffer = new Array[Byte](32000);
-
-        var len = inputStream.read(buffer)
-        while (len != -1) {
-          outputStream.write(buffer, 0, len - 1)
-          len = inputStream.read(buffer)
-        }
-        outputStream.flush()
-        inputStream.close()
-        outputStream.close()
-      }
-      println("\nYes7\n")
-      //val allChildren : Array[File] = hdfs.listFiles(new Path(args(3)), false);
-      //HDFSHelper.copyFolderToLocal(hdfs, args(3), "/");
-
-      val acc = sc.collectionAccumulator[Excl_decoder]("decoders")
       println("\nYes8\n")
       val rdd = sc.textFile("hdfs://master:9000/DistributedDecoderTest/Test0/inputFile.txt").cache().flatMap(line => line.split(" "));
+      rdd.saveAsTextFile("hdfs://master:9000/DistributedDecoderTest/Test0/inputFile2.txt")
       println("\nYes9\n")
-      val decoder = new Decoder();
-      println("\nYes10\n")
-      val decoderBroadcast = sc.broadcast(decoder)
       println("\nYes11\n")
-      rdd.foreach(item => acc.add(decoderBroadcast.value.add_decoder(item, "hdfs://master:9000/DistributedDecoderTest/Test0/decoderFile.txt")))
+      rdd.foreach(item => new Decoder().add_decoder(item, "hdfs://master:9000/DistributedDecoderTest/Test0/decoderFile.txt"))
       println("\nYes12\n")
-      decoderBroadcast.value.add_parallel_decoders(acc.value);
-      println("\nYes13\n")
       val rdd2 = sc.textFile("hdfs://master:9000/DistributedDecoderTest/Test0/decoderFile.txt").cache().flatMap(line => line.split(" "));
       println("\nYes14\n")
+      rdd2.saveAsTextFile("hdfs://master:9000/DistributedDecoderTest/Test0/inputFile3.txt")
       //decoderBroadcast.value.decode("16", args(2))
-      rdd2.foreach(item => decoderBroadcast.value.decode(item.toString, "hdfs://master:9000/DistributedDecoderTest/Test0/outputFile.txt"));
+      rdd2.foreach(item => new Decoder().decode(extradecoder.value, item.toString, "hdfs://master:9000/DistributedDecoderTest/Test0/outputFile.txt"));
       println("\nYes15\n")
       sc.stop()
 
@@ -93,13 +57,6 @@ object App extends Serializable {
         println("======>>printStackTraceStr Exception: " + e.getClass() + "\n==>" + e.printStackTrace() + e.getMessage())}
     }
 
-  }
-
-  def forEachAddDecoder(acc:CollectionAccumulator[Excl_decoder], decoderBroadcast: Broadcast[Decoder], item:String, args:String):Int={
-    println("\nAdd decoder1\n");
-    acc.add(decoderBroadcast.value.add_decoder(item, args));
-    println("\nAdd decoder 8\n")
-    return 1;
   }
 
 
