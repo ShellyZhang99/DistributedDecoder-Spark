@@ -10,7 +10,23 @@ import  java.util.Vector;
 import java.util.Arrays;
 
 public class Parallel_decoder implements Serializable {
+    public interface DecoderLibrary extends Library {
 
+
+        DecoderLibrary INSTANCE = (DecoderLibrary) Native.load("/home/bigdataflow/DistributedDecoder/cpplib_shared.so", DecoderLibrary.class);
+
+        Pointer Parallel_excl_decoder_ctor();
+        //Parallel_excl_decoder* Parallel_excl_decoder_add_excl_decoder(Parallel_excl_decoder *self, const char *config_filename, int primary, char* pt_filename)
+        int Parallel_excl_decoder_decode(Pointer self, int i);
+
+        Pointer Parallel_excl_decoder_get(Pointer temp, int i);
+
+        Pointer Parallel_decoder_ctor();
+        //Parallel_excl_decoder* Parallel_decoder_add_excl_decoder(Parallel_decoder *self, const char *config_filename, int primary, char* pt_filename)
+        int Parallel_decoder_add_excl_decoder(Pointer self, Pointer config_filename, int primary, Pointer pt_filename);
+
+
+    }
     public MyPointer self;
 
     public Parallel_decoder()
