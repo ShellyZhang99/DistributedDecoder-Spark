@@ -31,7 +31,7 @@ public class Parallel_excl_decoder implements Serializable {
         name = n;
     }
 
-    public String decode(ExtraDecoder extraDecoder,int i)
+    public String decode(SimpDecoder extraDecoder,int i)
     {
 
 
@@ -39,6 +39,6 @@ public class Parallel_excl_decoder implements Serializable {
         int temp = DecoderLibrary.INSTANCE.Parallel_excl_decoder_decode(tempPointer, i);*/
 
         extraDecoder.decode(i);
-        return "/home/bigdataflow/DistributedDecoder/Test0/outputFileTemp.txt";
+        return "/home/bigdataflow/DistributedDecoder/Test0/outputFileTemp"+Integer.toString(i)+".txt";
     }
 }

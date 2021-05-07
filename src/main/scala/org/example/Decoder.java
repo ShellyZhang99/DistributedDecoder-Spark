@@ -35,15 +35,8 @@ public class Decoder implements Serializable {
         }
         catch (Exception e)
         {
-            try
-            {
-                fileWriterMethod("/home/bigdataflow/DistributedDecoder/Test0/outputFileTemp.txt", "\n"+e.getMessage());
+                System.out.println(e.getMessage());
 
-            }
-            catch(Exception e2)
-            {
-                System.out.println(e2.getMessage());
-            }
         }
         //关闭hdfs文件
     }
@@ -54,7 +47,7 @@ public class Decoder implements Serializable {
         }
     }
 
-    public void decode(ExtraDecoder extraDecoder, String name, String outputFile)
+    public void decode(SimpDecoder extraDecoder, String name, String outputFile)
     {
         try {
         int p = Integer.parseInt(name);
@@ -80,15 +73,7 @@ public class Decoder implements Serializable {
         }
         catch (Exception e)
         {
-            try
-            {
-                fileWriterMethod("/home/bigdataflow/DistributedDecoder/Test0/outputFileTemp.txt", "\n"+e.getMessage());
-
-            }
-            catch(Exception e2)
-            {
-                System.out.println(e2.getMessage());
-            }
+                System.out.println(e.getMessage());
         }
         //写进文件
         //关闭hdfs文件

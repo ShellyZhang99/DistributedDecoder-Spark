@@ -24,8 +24,6 @@ object App extends Serializable {
 
       //sc.addFile(args(1))
       //sc.addFile(args(2))
-      System.load("/home/bigdataflow/DistributedDecoder/libDecoder.so");
-      val extradecoder = sc.broadcast(new  ExtraDecoder());
       val cfg = new Configuration();
       println("\nYes0\n")
       cfg.set("fs.defaultFS", "hdfs://master:9000");
@@ -45,7 +43,11 @@ object App extends Serializable {
       println("\nYes14\n")
       rdd2.saveAsTextFile("hdfs://master:9000/DistributedDecoderTest/Test0/inputFile3.txt")
       //decoderBroadcast.value.decode("16", args(2))
-      rdd2.foreach(item => new Decoder().decode(extradecoder.value, item.toString, "hdfs://master:9000/DistributedDecoderTest/Test0/outputFile.txt"));
+      rdd2.foreach(item => {
+        System.load("/home/bigdataflow/DistributedDecoder/libSimpDecoder.so");
+        val extradecoder = new  SimpDecoder();
+        new Decoder().decode(extradecoder, item.toString, "hdfs://master:9000/DistributedDecoderTest/Test0/outputFile.txt")
+      });
       println("\nYes15\n")
       sc.stop()
 
