@@ -28,7 +28,7 @@ public class Decoder implements Serializable {
                     String name = String.valueOf(place);
                     //把temp[i].name写在文件上
                     String h = name + " ";
-                    fileWriterMethod("/home/bigdataflow/DistributedDecoder/Test0/outputFileTemp.txt", "\n"+h+"\n");
+                    fileWriterMethod("/home/bigdataflow/DistributedDecoder/Test0/outputFileTemp"+name+".txt", "\n"+h+"\n");
                     out.write(h.getBytes("UTF-8"));
                 }
                 out.close();
